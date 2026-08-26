@@ -1,0 +1,13 @@
+* text=auto eol=lf
+
+*.icns binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.zip binary
+
+*.plist text eol=lf
+*.swift text eol=lf
+*.xcprivacy text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

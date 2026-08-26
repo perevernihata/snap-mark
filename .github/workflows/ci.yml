@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Check repository
+        run: make check
+
+      - name: Validate workflows and scan for secrets
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint gitleaks
+          actionlint
+          gitleaks dir . --redact --no-banner --max-target-megabytes 10 --timeout 120
+
+      - name: Build and test
+        run: make test
+
+      - name: Build universal package
+        run: make package
+
+      - name: Verify package
+        run: make verify-package
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SnapMark-macOS-universal
+          path: |
+            dist/SnapMark.zip
+            dist/SnapMark.zip.sha256
+          if-no-files-found: error
+          retention-days: 14

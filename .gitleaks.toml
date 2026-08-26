@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated build output and Git internals"
+paths = [
+  '''(^|/)\.build/''',
+  '''(^|/)dist/''',
+  '''(^|/)\.git/'''
+]

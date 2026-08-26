@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build release
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Match tag to bundle version
+        run: |
+          version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Packaging/Info.plist)
+          test "v${version}" = "${GITHUB_REF_NAME}"
+
+      - name: Check repository
+        run: make check
+
+      - name: Validate workflows and scan for secrets
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint gitleaks
+          actionlint
+          gitleaks dir . --redact --no-banner --max-target-megabytes 10 --timeout 120
+
+      - name: Build and test
+        run: make test
+
+      - name: Build universal package
+        run: make package
+
+      - name: Verify package
+        run: make verify-package
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/SnapMark.zip \
+            dist/SnapMark.zip.sha256 \
+            --verify-tag \
+            --latest \
+            --generate-notes \
+            --title "SnapMark ${GITHUB_REF_NAME#v}"
