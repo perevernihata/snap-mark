@@ -17,6 +17,16 @@ I built SnapMark because I was sick of being asked to pay a licence fee for some
 
 SnapMark captures one area across display boundaries or a specific window, then opens it in a focused editor. Crop, draw, highlight, add shapes and text, hide details, copy, save, or share without uploading the image anywhere.
 
+## See it in action
+
+<p align="center">
+  <a href="docs/media/snapmark-demo.mp4">
+    <img src="docs/media/snapmark-demo.gif" width="900" alt="SnapMark editing a synthetic screenshot with arrow, rectangle, text, pixelate, crop, and copy tools">
+  </a>
+</p>
+
+The demo uses SnapMark's built-in synthetic image. It contains no real desktop, account, file, message, or capture. Click the animation to open the MP4.
+
 ## Download
 
 Download the latest universal macOS build from [GitHub Releases](https://github.com/perevernihata/snap-mark/releases/latest). It supports Apple Silicon and Intel Macs.

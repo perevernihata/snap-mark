@@ -4,6 +4,10 @@ This file records user-visible SnapMark changes. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- A privacy-safe editor walkthrough recorded entirely from SnapMark's built-in synthetic scene.
+
 ## [1.0.20] - 2026-08-27
 
 This is the first public source release.
