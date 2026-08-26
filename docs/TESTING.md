@@ -10,7 +10,7 @@ Command:
 make test
 ```
 
-Result: 31 passed, 0 failed.
+Result: 32 passed, 0 failed.
 
 The suite covers:
 
@@ -39,6 +39,7 @@ The suite covers:
 - history refresh after an external file change and bounded background thumbnail decoding
 - capture-service watchdog behavior when an asynchronous capture call stalls
 - detection of a running app bundle that has been moved or removed
+- a close-on-exec, no-symlink single-instance process lock
 - permission-gated routing that never launches a prompt-prone capture fallback when access is unavailable
 - a full synthetic capture, annotate, crop, redact, export, save, and reopen flow
 

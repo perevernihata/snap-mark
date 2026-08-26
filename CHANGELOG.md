@@ -15,6 +15,7 @@ This file records user-visible SnapMark changes. The format follows [Keep a Chan
 ### Security
 
 - Recent captures and temporary capture data now use owner-only filesystem permissions. Older Recent PNGs are tightened when SnapMark loads them.
+- The per-user single-instance lock is close-on-exec and refuses symbolic-link targets.
 - Community packages enable the hardened runtime and fail packaging if that signature flag is missing.
 - GitHub Actions are pinned to full commit SHAs. Repository policy rejects mutable action references and unapproved workflows from every external contributor.
 - Release building, provenance attestation, and publication use separate least-privilege jobs. The publishing job does not check out or execute repository code and must pass the protected `release` environment.

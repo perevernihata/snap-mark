@@ -696,6 +696,21 @@ enum SelfTestRunner {
             try expect(second.acquire(), "the lock was not released when the first instance quit")
         }
 
+        runCase("single-instance lock refuses symlinks", passed: &passed, failed: &failed) {
+            let stem = "SnapMarkSelfTest-\(UUID().uuidString)"
+            let targetURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(stem)-target.lock")
+            let symlinkURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(stem)-link.lock")
+            defer {
+                try? FileManager.default.removeItem(at: symlinkURL)
+                try? FileManager.default.removeItem(at: targetURL)
+            }
+            try Data().write(to: targetURL, options: .atomic)
+            try FileManager.default.createSymbolicLink(at: symlinkURL, withDestinationURL: targetURL)
+
+            let guardInstance = SingleInstanceGuard(lockURL: symlinkURL)
+            try expect(!guardInstance.acquire(), "the process lock followed a symbolic link")
+        }
+
         runCase("permission-free capture routing", passed: &passed, failed: &failed) {
             let areaRoute = try CaptureRoute.resolve(mode: .area, hasFullScreenRecordingAccess: false)
             let windowRoute = try CaptureRoute.resolve(mode: .window, hasFullScreenRecordingAccess: false)

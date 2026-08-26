@@ -111,7 +111,7 @@ make package
 make verify-package
 ```
 
-`make test` treats warnings as errors and runs 31 deterministic tests. `make package` builds a universal arm64 and Intel app with an explicit ad-hoc signature and hardened runtime. Maintainers with the stable local signing files use `make app` instead.
+`make test` treats warnings as errors and runs 32 deterministic tests. `make package` builds a universal arm64 and Intel app with an explicit ad-hoc signature and hardened runtime. Maintainers with the stable local signing files use `make app` instead.
 
 The application is a Swift Package with a SwiftUI shell and AppKit capture overlays and editor canvas. It has no third-party runtime dependencies. See [Architecture](docs/ARCHITECTURE.md) for the component boundaries and [Testing](docs/TESTING.md) for the current regression coverage.
 
