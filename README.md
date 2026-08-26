@@ -13,6 +13,8 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
 </p>
 
+I built SnapMark because I was sick of being asked to pay a licence fee for something as basic as taking a screenshot. That is nonsense. This is the free drop-in replacement I use on my own Mac, and it works. No subscription, no account, no upload.
+
 SnapMark captures one area across display boundaries or a specific window, then opens it in a focused editor. Crop, draw, highlight, add shapes and text, hide details, copy, save, or share without uploading the image anywhere.
 
 ## Download
