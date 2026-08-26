@@ -59,7 +59,11 @@ final class CaptureService {
         ).integral
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SnapMarkArea-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: NSNumber(value: 0o700)]
+        )
         defer { try? FileManager.default.removeItem(at: directory) }
         let url = directory.appendingPathComponent("area.png")
         let region = [
@@ -89,7 +93,11 @@ final class CaptureService {
     func captureWindowUsingSystemTool() async throws -> CGImage? {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SnapMarkWindow-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: NSNumber(value: 0o700)]
+        )
         defer { try? FileManager.default.removeItem(at: directory) }
         let url = directory.appendingPathComponent("window.png")
         let status = try await SystemScreenshotProcess().run(

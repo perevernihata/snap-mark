@@ -10,7 +10,7 @@ SnapMark is a Swift Package that produces one native macOS executable. It has no
 - `EditorSession` stores the base image, non-destructive annotations, and undo and redo snapshots.
 - `AnnotationCanvasNSView` handles direct AppKit pointer and text interaction inside the SwiftUI editor.
 - `ImageRenderer` flattens annotations for clipboard, saved files, and sharing. Privacy edits run in a final pass so blackout always wins an overlap.
-- `HistoryStore` keeps up to 30 raw PNG captures under Application Support when history is enabled.
+- `HistoryStore` keeps up to 30 raw PNG captures under Application Support when history is enabled. The capture directory is mode `0700`; PNG files are normalized to mode `0600`, including older files discovered during reload.
 
 ## Capture flow
 
@@ -36,7 +36,7 @@ The selection overlay never paints a cached desktop image. It leaves the real de
 
 SnapMark does not contain networking code. Preferences use app-local `UserDefaults`. Recent history reads file timestamps to show capture dates. Those uses are declared in `Packaging/PrivacyInfo.xcprivacy`.
 
-Blackout and pixelation modify exported pixels, but the original capture remains unchanged in Recent history. That separation makes undo possible and is called out in the UI and README.
+Blackout and pixelation modify exported pixels, but the original capture remains unchanged in Recent history. Pixelation is visual obfuscation rather than reliable secret redaction; Blackout replaces selected exported pixels. That separation makes undo possible and is called out in the UI and README.
 
 ## Test strategy
 

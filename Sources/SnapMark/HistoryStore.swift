@@ -10,6 +10,14 @@ struct HistoryItem: Identifiable, Hashable {
     var id: URL { url }
 }
 
+enum HistoryStoreError: LocalizedError {
+    case privateStorageUnavailable
+
+    var errorDescription: String? {
+        "SnapMark could not secure its Recent capture folder. Recent history is unavailable."
+    }
+}
+
 @MainActor
 final class HistoryStore: ObservableObject {
     @Published private(set) var items: [HistoryItem] = []
@@ -17,6 +25,7 @@ final class HistoryStore: ObservableObject {
     let directory: URL
     private let fileManager: FileManager
     private let limit: Int
+    private var storageIsPrivate = false
 
     init(directory: URL? = nil, fileManager: FileManager = .default, limit: Int = 30) {
         self.fileManager = fileManager
@@ -31,12 +40,15 @@ final class HistoryStore: ObservableObject {
             self.directory = support.appendingPathComponent("SnapMark/Captures", isDirectory: true)
         }
 
-        try? fileManager.createDirectory(at: self.directory, withIntermediateDirectories: true)
+        storageIsPrivate = secureDirectory()
         reload()
     }
 
     @discardableResult
     func save(_ image: CGImage, date: Date = Date()) throws -> HistoryItem {
+        guard secureDirectory() else {
+            throw HistoryStoreError.privateStorageUnavailable
+        }
         guard let data = ExportService.pngData(for: image) else {
             throw ExportServiceError.encodingFailed
         }
@@ -46,7 +58,15 @@ final class HistoryStore: ObservableObject {
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss-SSS"
         let url = uniqueURL(stem: "SnapMark_\(formatter.string(from: date))")
         try data.write(to: url, options: .atomic)
-        try? fileManager.setAttributes([.modificationDate: date], ofItemAtPath: url.path)
+        do {
+            try fileManager.setAttributes([
+                .modificationDate: date,
+                .posixPermissions: NSNumber(value: 0o600)
+            ], ofItemAtPath: url.path)
+        } catch {
+            try? fileManager.removeItem(at: url)
+            throw HistoryStoreError.privateStorageUnavailable
+        }
         reload()
         trimIfNeeded()
         return HistoryItem(url: url, date: date)
@@ -81,7 +101,17 @@ final class HistoryStore: ObservableObject {
     }
 
     func reload() {
-        let keys: Set<URLResourceKey> = [.creationDateKey, .contentModificationDateKey, .isRegularFileKey]
+        guard storageIsPrivate || secureDirectory() else {
+            items = []
+            return
+        }
+
+        let keys: Set<URLResourceKey> = [
+            .creationDateKey,
+            .contentModificationDateKey,
+            .isRegularFileKey,
+            .isSymbolicLinkKey
+        ]
         let urls = (try? fileManager.contentsOfDirectory(
             at: directory,
             includingPropertiesForKeys: Array(keys),
@@ -91,9 +121,38 @@ final class HistoryStore: ObservableObject {
         items = urls.compactMap { url -> HistoryItem? in
             guard url.pathExtension.lowercased() == "png",
                   let values = try? url.resourceValues(forKeys: keys),
-                  values.isRegularFile == true else { return nil }
+                  values.isRegularFile == true,
+                  values.isSymbolicLink != true else { return nil }
+            do {
+                try fileManager.setAttributes(
+                    [.posixPermissions: NSNumber(value: 0o600)],
+                    ofItemAtPath: url.path
+                )
+            } catch {
+                return nil
+            }
             return HistoryItem(url: url, date: values.contentModificationDate ?? values.creationDate ?? .distantPast)
         }.sorted { $0.date > $1.date }
+    }
+
+    @discardableResult
+    private func secureDirectory() -> Bool {
+        do {
+            try fileManager.createDirectory(
+                at: directory,
+                withIntermediateDirectories: true,
+                attributes: [.posixPermissions: NSNumber(value: 0o700)]
+            )
+            try fileManager.setAttributes(
+                [.posixPermissions: NSNumber(value: 0o700)],
+                ofItemAtPath: directory.path
+            )
+            storageIsPrivate = true
+            return true
+        } catch {
+            storageIsPrivate = false
+            return false
+        }
     }
 
     private func uniqueURL(stem: String) -> URL {

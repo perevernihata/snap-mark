@@ -46,4 +46,32 @@ if (( FOUND_SECRET != 0 )); then
     exit 1
 fi
 
+UNPINNED_ACTIONS="$(
+    /usr/bin/grep -RHE '^[[:space:]]*-?[[:space:]]*uses:[[:space:]]+' .github/workflows 2>/dev/null |
+        /usr/bin/grep -Ev 'uses:[[:space:]]+((\./)|[^[:space:]#]+@[0-9a-f]{40})([[:space:]]+#.*)?$' || true
+)"
+if [[ -n "$UNPINNED_ACTIONS" ]]; then
+    print -u2 "Every external GitHub Action must be pinned to a full commit SHA:"
+    print -u2 -- "$UNPINNED_ACTIONS"
+    exit 1
+fi
+
+UNSAFE_TRIGGERS="$(
+    /usr/bin/grep -RHE '^[[:space:]]*(pull_request_target|workflow_run):' .github/workflows 2>/dev/null || true
+)"
+if [[ -n "$UNSAFE_TRIGGERS" ]]; then
+    print -u2 "Privileged follow-up and pull-request-target workflows require a separate security review:"
+    print -u2 -- "$UNSAFE_TRIGGERS"
+    exit 1
+fi
+
+PERSISTED_CREDENTIALS="$(
+    /usr/bin/grep -RHE '^[[:space:]]*persist-credentials:[[:space:]]*true([[:space:]]*#.*)?$' .github/workflows 2>/dev/null || true
+)"
+if [[ -n "$PERSISTED_CREDENTIALS" ]]; then
+    print -u2 "Workflow checkouts must not persist repository credentials:"
+    print -u2 -- "$PERSISTED_CREDENTIALS"
+    exit 1
+fi
+
 print "Repository checks passed."

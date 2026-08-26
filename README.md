@@ -42,6 +42,14 @@ Verify the download from the directory that contains both files:
 shasum -a 256 -c SnapMark.zip.sha256
 ```
 
+For releases published after provenance was enabled, also verify that GitHub built the archive from this repository's protected release workflow:
+
+```sh
+gh attestation verify SnapMark.zip \
+  --repo perevernihata/snap-mark \
+  --signer-workflow perevernihata/snap-mark/.github/workflows/release.yml
+```
+
 Then expand the ZIP and move `SnapMark.app` into `/Applications`.
 
 Community builds are code-signed but not Apple-notarized. On first launch, Control-click SnapMark, choose **Open**, then confirm. macOS may instead offer **Open Anyway** under **System Settings > Privacy & Security**. The source and build workflow are public so the binary can be reproduced and inspected.
@@ -65,7 +73,7 @@ A 3, 5, or 10 second delay is available from the home screen. Capture preparatio
 | `A` | Arrow | Drag toward the point of interest. |
 | `R` | Rectangle | Draw an outlined box. |
 | `T` | Text | Click and type. Drag while typing to move it, then press Return. |
-| `B` | Pixelate | Hide a selected area with coarse pixels. |
+| `B` | Pixelate | Visually obscure an area. Do not use it to redact secrets. |
 | `X` | Blackout | Replace selected pixels with solid black in exported output. |
 | `C` | Crop | Drag the area to keep. The crop applies on release. |
 
@@ -81,7 +89,9 @@ Recent history is enabled by default and keeps up to 30 raw PNG captures under:
 ~/Library/Application Support/SnapMark/Captures
 ```
 
-Pixelate and blackout are flattened into copied and saved output, but the raw Recent capture still contains the original pixels. Disable history before capturing sensitive material or remove the original from the capture folder afterward.
+Pixelate and blackout are flattened into copied and saved output, but pixelation can leave information recognizable or recoverable. Use **Blackout**, not Pixelate, for passwords, tokens, personal data, or other secrets. The raw Recent capture still contains the original pixels either way. Disable history before capturing sensitive material or remove the original from the capture folder afterward.
+
+The Recent directory is restricted to the current macOS user and each PNG is saved owner-only. That does not isolate captures from other software running as the same user. Clipboard contents and anything sent through the macOS share sheet also leave SnapMark's local storage boundary.
 
 The bundled [privacy manifest](Packaging/PrivacyInfo.xcprivacy) declares app-only preferences and the file timestamps displayed for Recent captures. It declares no tracking and no collected data.
 
@@ -101,7 +111,7 @@ make package
 make verify-package
 ```
 
-`make test` treats warnings as errors and runs 30 deterministic tests. `make package` builds a universal arm64 and Intel app with an explicit ad-hoc signature. Maintainers with the stable local signing files use `make app` instead.
+`make test` treats warnings as errors and runs 31 deterministic tests. `make package` builds a universal arm64 and Intel app with an explicit ad-hoc signature and hardened runtime. Maintainers with the stable local signing files use `make app` instead.
 
 The application is a Swift Package with a SwiftUI shell and AppKit capture overlays and editor canvas. It has no third-party runtime dependencies. See [Architecture](docs/ARCHITECTURE.md) for the component boundaries and [Testing](docs/TESTING.md) for the current regression coverage.
 

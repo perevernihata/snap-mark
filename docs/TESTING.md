@@ -10,7 +10,7 @@ Command:
 make test
 ```
 
-Result: 30 passed, 0 failed.
+Result: 31 passed, 0 failed.
 
 The suite covers:
 
@@ -35,6 +35,7 @@ The suite covers:
 - transparent, content-sized live text with renderer-matched styling, exact character preservation, and drag-to-reposition without commit snap-back
 - palette changes that recolor an active text draft and survive Return
 - history ordering and the 30-item retention mechanism
+- owner-only permissions for the Recent directory, new captures, and older captures discovered during reload
 - history refresh after an external file change and bounded background thumbnail decoding
 - capture-service watchdog behavior when an asynchronous capture call stalls
 - detection of a running app bundle that has been moved or removed
