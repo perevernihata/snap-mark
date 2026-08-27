@@ -186,7 +186,31 @@ struct EditorView: View {
                 }
             }
 
-            if session.selectedTool != .pixelate && session.selectedTool != .blackout && session.selectedTool != .crop && session.selectedTool != .text {
+            if session.selectedTool == .text {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Text size")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(Int(session.textFontSize)) pt")
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
+                    Slider(
+                        value: $session.textFontSize,
+                        in: TextAnnotationStyle.fontSizeRange,
+                        step: 1,
+                        onEditingChanged: { isEditing in
+                            if !isEditing {
+                                session.requestTextEntryFocus()
+                            }
+                        }
+                    )
+                    .accessibilityLabel("Text size")
+                    .accessibilityValue("\(Int(session.textFontSize)) points")
+                }
+            } else if session.selectedTool != .pixelate && session.selectedTool != .blackout && session.selectedTool != .crop {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("Size")

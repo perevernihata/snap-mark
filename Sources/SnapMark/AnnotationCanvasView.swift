@@ -19,6 +19,8 @@ final class AnnotationCanvasNSView: NSView, NSTextViewDelegate {
     private(set) var session: EditorSession
     private var observation: AnyCancellable?
     private var colorObservation: AnyCancellable?
+    private var textSizeObservation: AnyCancellable?
+    private var textFocusObservation: AnyCancellable?
     private var cachedImage: CGImage?
     private var startPoint: CGPoint?
     private var livePoints: [CGPoint] = []
@@ -74,6 +76,12 @@ final class AnnotationCanvasNSView: NSView, NSTextViewDelegate {
         }
         colorObservation = session.$selectedColor.sink { [weak self] color in
             self?.syncActiveTextColor(to: color)
+        }
+        textSizeObservation = session.$textFontSize.sink { [weak self] fontSize in
+            self?.syncActiveTextFontSize(to: fontSize)
+        }
+        textFocusObservation = session.textEntryFocusRequests.sink { [weak self] in
+            self?.focusActiveTextEntry()
         }
     }
 
@@ -349,7 +357,7 @@ final class AnnotationCanvasNSView: NSView, NSTextViewDelegate {
         commitTextEntry()
         textOrigin = imagePoint
         textColor = session.selectedColor
-        textFontSize = TextAnnotationStyle.fontSize(for: session.lineWidth)
+        textFontSize = TextAnnotationStyle.clampedFontSize(session.textFontSize)
 
         let editor = NSTextView(frame: CGRect(x: viewPoint.x, y: viewPoint.y, width: 10, height: 24))
         editor.delegate = self
@@ -456,6 +464,20 @@ final class AnnotationCanvasNSView: NSView, NSTextViewDelegate {
         textColor = color
         editor.insertionPointColor = color.nsColor
         resizeTextEntry()
+        window?.makeFirstResponder(editor)
+    }
+
+    private func syncActiveTextFontSize(to fontSize: CGFloat) {
+        guard textView != nil,
+              session.selectedTool == .text else { return }
+        let clampedSize = TextAnnotationStyle.clampedFontSize(fontSize)
+        guard textFontSize != clampedSize else { return }
+        textFontSize = clampedSize
+        resizeTextEntry()
+    }
+
+    private func focusActiveTextEntry() {
+        guard let editor = textView else { return }
         window?.makeFirstResponder(editor)
     }
 

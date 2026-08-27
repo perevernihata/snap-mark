@@ -4,6 +4,17 @@ This file records user-visible SnapMark changes. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [1.0.23] - 2026-08-28
+
+### Added
+
+- The Text inspector now has an independent 12–72 pt size control with a live point-size readout and VoiceOver value.
+
+### Fixed
+
+- Changing size while typing immediately resizes the transparent draft, preserves typing focus after the control interaction, and commits the exact visible size on Return.
+- Text size no longer inherits the Pen, Highlight, Arrow, or Rectangle stroke width.
+
 ## [1.0.22] - 2026-08-27
 
 ### Fixed
@@ -54,7 +65,8 @@ This is the first public source release.
 - Inline text is transparent, content-sized, movable while typing, and visually consistent after commit.
 - Changing the palette recolors an active text draft and preserves that color after pressing Return.
 
-[Unreleased]: https://github.com/perevernihata/snap-mark/compare/v1.0.22...HEAD
+[Unreleased]: https://github.com/perevernihata/snap-mark/compare/v1.0.23...HEAD
+[1.0.23]: https://github.com/perevernihata/snap-mark/compare/v1.0.22...v1.0.23
 [1.0.22]: https://github.com/perevernihata/snap-mark/compare/v1.0.21...v1.0.22
 [1.0.21]: https://github.com/perevernihata/snap-mark/compare/v1.0.20...v1.0.21
 [1.0.20]: https://github.com/perevernihata/snap-mark/releases/tag/v1.0.20

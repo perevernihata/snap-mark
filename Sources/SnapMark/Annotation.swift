@@ -36,8 +36,11 @@ struct RGBAColor: Equatable, Codable, Hashable {
 }
 
 enum TextAnnotationStyle {
-    static func fontSize(for lineWidth: CGFloat) -> CGFloat {
-        max(18, lineWidth * 4)
+    static let defaultFontSize: CGFloat = 24
+    static let fontSizeRange: ClosedRange<CGFloat> = 12...72
+
+    static func clampedFontSize(_ fontSize: CGFloat) -> CGFloat {
+        min(max(fontSizeRange.lowerBound, fontSize), fontSizeRange.upperBound)
     }
 
     static func attributes(color: RGBAColor, fontSize: CGFloat) -> [NSAttributedString.Key: Any] {
