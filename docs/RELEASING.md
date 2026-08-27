@@ -13,13 +13,24 @@
    make verify-package
    ```
 
-4. Tag the exact release commit as `vMAJOR.MINOR.PATCH` and push the tag.
+4. Merge the release commit to protected `main`. Tag the current `main` tip as `vMAJOR.MINOR.PATCH` and push the tag.
 
-The Release workflow checks that the tag matches the bundle version, rebuilds a universal package, verifies it, and publishes `SnapMark.zip` with `SnapMark.zip.sha256`.
+The Release workflow refuses any tag that is not the current protected `main` tip or does not match the bundle version. A read-only job builds and verifies the universal package. A separate no-checkout job rechecks the immutable workflow artifact and creates a Sigstore-backed GitHub provenance attestation. Only then can the manually approved `release` environment give a final no-checkout job `contents: write` long enough to publish `SnapMark.zip` and `SnapMark.zip.sha256`.
+
+All workflow actions are pinned to full commit SHAs and updated by Dependabot. Repository policy rejects unpinned actions, write-by-default workflow tokens, unapproved external pull-request workflows, mutable version tags, and releases without environment approval.
+
+Verify a published archive with both controls:
+
+```sh
+shasum -a 256 -c SnapMark.zip.sha256
+gh attestation verify SnapMark.zip \
+  --repo perevernihata/snap-mark \
+  --signer-workflow perevernihata/snap-mark/.github/workflows/release.yml
+```
 
 ## Signing
 
-The public workflow uses an explicit ad-hoc signature because repository secrets do not contain an Apple certificate. It never pretends that build is notarized. Users can inspect the source, verify the checksum, and build locally.
+The public workflow uses an explicit ad-hoc signature with the hardened runtime because repository secrets do not contain an Apple certificate. It never pretends that build is notarized. Users can inspect the source, verify the checksum and provenance, and build locally.
 
 Maintainers can create a stable local package with:
 

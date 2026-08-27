@@ -585,6 +585,45 @@ enum SelfTestRunner {
             try expect(!store.items.contains { $0.date.timeIntervalSince1970 == 1 }, "oldest history item was not removed")
         }
 
+        runCase("history files are owner-only", passed: &passed, failed: &failed) {
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("SnapMarkSelfTest-\(UUID().uuidString)", isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: directory) }
+
+            try FileManager.default.createDirectory(
+                at: directory,
+                withIntermediateDirectories: true,
+                attributes: [.posixPermissions: NSNumber(value: 0o755)]
+            )
+            let image = try require(DemoImageFactory.make(width: 100, height: 70), "could not make private-history image")
+            let data = try require(ExportService.pngData(for: image), "could not encode private-history image")
+            let existingURL = directory.appendingPathComponent("ExistingCapture.png")
+            try data.write(to: existingURL, options: .atomic)
+            try FileManager.default.setAttributes(
+                [.posixPermissions: NSNumber(value: 0o644)],
+                ofItemAtPath: existingURL.path
+            )
+
+            let store = HistoryStore(directory: directory)
+            let saved = try store.save(image)
+            let directoryMode = try require(
+                FileManager.default.attributesOfItem(atPath: directory.path)[.posixPermissions] as? NSNumber,
+                "history directory has no permission mode"
+            ).intValue & 0o777
+            let existingMode = try require(
+                FileManager.default.attributesOfItem(atPath: existingURL.path)[.posixPermissions] as? NSNumber,
+                "existing history item has no permission mode"
+            ).intValue & 0o777
+            let savedMode = try require(
+                FileManager.default.attributesOfItem(atPath: saved.url.path)[.posixPermissions] as? NSNumber,
+                "saved history item has no permission mode"
+            ).intValue & 0o777
+
+            try expect(directoryMode == 0o700, "history directory is not owner-only")
+            try expect(existingMode == 0o600, "existing history item was not made owner-only")
+            try expect(savedMode == 0o600, "new history item is not owner-only")
+        }
+
         runCase("history refresh and bounded thumbnails", passed: &passed, failed: &failed) {
             let directory = FileManager.default.temporaryDirectory
                 .appendingPathComponent("SnapMarkSelfTest-\(UUID().uuidString)", isDirectory: true)
@@ -655,6 +694,21 @@ enum SelfTestRunner {
             try expect(!second.acquire(), "a second app instance acquired the same lock")
             first.release()
             try expect(second.acquire(), "the lock was not released when the first instance quit")
+        }
+
+        runCase("single-instance lock refuses symlinks", passed: &passed, failed: &failed) {
+            let stem = "SnapMarkSelfTest-\(UUID().uuidString)"
+            let targetURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(stem)-target.lock")
+            let symlinkURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(stem)-link.lock")
+            defer {
+                try? FileManager.default.removeItem(at: symlinkURL)
+                try? FileManager.default.removeItem(at: targetURL)
+            }
+            try Data().write(to: targetURL, options: .atomic)
+            try FileManager.default.createSymbolicLink(at: symlinkURL, withDestinationURL: targetURL)
+
+            let guardInstance = SingleInstanceGuard(lockURL: symlinkURL)
+            try expect(!guardInstance.acquire(), "the process lock followed a symbolic link")
         }
 
         runCase("permission-free capture routing", passed: &passed, failed: &failed) {

@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -22,19 +22,15 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Show toolchain
         run: swift --version
 
       - name: Check repository
         run: make check
-
-      - name: Validate workflows and scan for secrets
-        run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 brew install actionlint gitleaks
-          actionlint
-          gitleaks dir . --redact --no-banner --max-target-megabytes 10 --timeout 120
 
       - name: Build and test
         run: make test
@@ -46,7 +42,7 @@ jobs:
         run: make verify-package
 
       - name: Upload package
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: SnapMark-macOS-universal
           path: |

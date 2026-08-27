@@ -73,7 +73,7 @@ install -m 644 "$PROJECT_DIR/Packaging/PrivacyInfo.xcprivacy" "$CONTENTS_DIR/Res
 # otherwise use SnapMark's persistent local certificate. Never silently fall back
 # to ad-hoc signing, because that would invalidate an existing permission grant.
 if [[ "$SIGNING_MODE" == "adhoc" ]]; then
-    codesign --force --deep --sign - "$APP_DIR"
+    codesign --force --deep --options runtime --sign - "$APP_DIR"
 elif [[ "$SIGNING_MODE" != "stable" ]]; then
     print -u2 "Unknown SNAPMARK_SIGNING_MODE: $SIGNING_MODE. Use stable or adhoc."
     exit 1
@@ -98,6 +98,7 @@ else
         --p12-file "$LOCAL_P12" \
         --p12-password-file "$LOCAL_PASSWORD" \
         --code-requirements-file "$LOCAL_REQUIREMENT" \
+        --code-signature-flags runtime \
         --timestamp-url none \
         "$APP_DIR"
 fi
@@ -106,6 +107,10 @@ codesign --verify --deep --strict --verbose=2 "$APP_DIR"
 SIGNATURE_DETAILS="$(codesign -dvvv "$APP_DIR" 2>&1)"
 if [[ "$SIGNING_MODE" != "adhoc" && "$SIGNATURE_DETAILS" == *"Signature=adhoc"* ]]; then
     print -u2 "SnapMark was signed ad-hoc; refusing to package a build that would invalidate Screen Recording access."
+    exit 1
+fi
+if [[ "$SIGNATURE_DETAILS" != *"runtime)"* ]]; then
+    print -u2 "SnapMark is missing the hardened runtime signature flag."
     exit 1
 fi
 

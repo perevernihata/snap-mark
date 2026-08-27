@@ -144,8 +144,15 @@ struct EditorView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if session.selectedTool == .pixelate || session.selectedTool == .blackout {
-                Label("Applied permanently when copied or saved", systemImage: "checkmark.shield.fill")
+            if session.selectedTool == .pixelate {
+                Label("Visual obfuscation only — use Blackout for secrets", systemImage: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.orange)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.orange.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            } else if session.selectedTool == .blackout {
+                Label("Exported pixels are replaced; raw history is unchanged", systemImage: "checkmark.shield.fill")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.green)
                     .padding(10)
@@ -241,7 +248,7 @@ struct EditorView: View {
         case .arrow: return "Drag from the start to the point of interest."
         case .rectangle: return "Drag a box around an area."
         case .text: return "Click and type. Drag to move; Return places it."
-        case .pixelate: return "Drag over sensitive details to hide them."
+        case .pixelate: return "Drag to obscure details visually. Pixelation is not reliable redaction."
         case .blackout: return "Drag to replace exported pixels with solid black. The raw capture remains in local history."
         case .crop: return "Drag the part to keep. The crop applies on release."
         }
