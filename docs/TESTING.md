@@ -1,6 +1,6 @@
 # Test report
 
-Tested on 27 August 2026 with macOS 26.5.2 and Apple Swift 6.2.4. Full Xcode was not installed, so the project uses Swift Package Manager and a built-in test runner.
+Tested on 28 August 2026 with macOS 26.5.2 and Apple Swift 6.2.4. Full Xcode was not installed, so the project uses Swift Package Manager and a built-in test runner.
 
 ## Automated run
 
@@ -10,7 +10,7 @@ Command:
 make test
 ```
 
-Result: 32 passed, 0 failed.
+Result: 33 passed, 0 failed.
 
 The suite covers:
 
@@ -34,6 +34,7 @@ The suite covers:
 - annotation-canvas drag ownership while the dedicated title bar remains draggable
 - transparent, content-sized live text with renderer-matched styling, exact character preservation, and drag-to-reposition without commit snap-back
 - palette changes that recolor an active text draft and survive Return
+- independent 12–72 pt text sizing that updates an active draft and survives Return
 - history ordering and the 30-item retention mechanism
 - owner-only permissions for the Recent directory, new captures, and older captures discovered during reload
 - history refresh after an external file change and bounded background thumbnail decoding
@@ -156,3 +157,15 @@ The inline editor had copied `selectedColor` only when the draft began. A dedica
 - Pressing Return committed the same Mint text and enabled Undo.
 - A regression starts a Coral draft, changes the palette to Blue, and verifies both the live attributed string and committed annotation are Blue.
 - The release build passed all 30 self-tests with warnings treated as errors. The installed app and release ZIP passed strict signature verification with the existing persistent designated requirement.
+
+## 1.0.23 active-text size regression run
+
+The installed 1.0.22 build reproduced the reported editor state: Text exposed its color palette but no size control. The inline editor also cached its font size when typing began, so changing the underlying size could not update the draft or the committed annotation.
+
+- Text now has its own 12–72 pt slider and point-size readout instead of inheriting drawing stroke width.
+- A live draft resizes immediately when the size changes and keeps its exact characters, color, and position.
+- The size interaction returns keyboard focus to the active draft, so typing continues without another canvas click.
+- Return commits the same point size shown by the live editor.
+- VoiceOver exposes the control as **Text size** with its value in points.
+- The regression changes an active draft from 24 to 48 pt and verifies both the attributed live text and stored annotation.
+- A real UI run changed an active draft from 24 to 66 pt, continued typing, committed it, and visually confirmed the larger result.

@@ -437,7 +437,7 @@ enum SelfTestRunner {
             let session = EditorSession(image: image)
             session.selectedTool = .text
             session.selectedColor = .coral
-            session.lineWidth = 6
+            session.textFontSize = 24
             let canvas = AnnotationCanvasNSView(session: session)
             canvas.frame = CGRect(x: 0, y: 0, width: 800, height: 600)
 
@@ -476,7 +476,7 @@ enum SelfTestRunner {
                 throw SelfTestFailure(description: "inline text editor uses an unsupported view")
             }
 
-            let expectedFontSize = max(18, session.lineWidth * 4) * 0.9
+            let expectedFontSize = session.textFontSize * 0.9
             let strokeWidth = attributed.length > 0
                 ? (attributed.attribute(.strokeWidth, at: 0, effectiveRange: nil) as? NSNumber)?.doubleValue
                 : nil
@@ -568,6 +568,56 @@ enum SelfTestRunner {
             } else {
                 throw SelfTestFailure(description: "Return did not create the recolored text annotation")
             }
+        }
+
+        runCase("active text follows size changes", passed: &passed, failed: &failed) {
+            let image = try require(makeSolidImage(width: 800, height: 600, color: .white), "could not make text-size fixture")
+            let session = EditorSession(image: image)
+            session.selectedTool = .text
+            session.lineWidth = 18
+            session.textFontSize = 24
+            let canvas = AnnotationCanvasNSView(session: session)
+            canvas.frame = CGRect(x: 0, y: 0, width: 800, height: 600)
+
+            let down = NSEvent.mouseEvent(
+                with: .leftMouseDown,
+                location: CGPoint(x: 200, y: 200),
+                modifierFlags: [],
+                timestamp: 0,
+                windowNumber: 0,
+                context: nil,
+                eventNumber: 1,
+                clickCount: 1,
+                pressure: 1
+            )!
+            canvas.mouseDown(with: down)
+            let editor = try require(canvas.subviews.first as? NSTextView, "text entry did not create an inline editor")
+            editor.textStorage?.setAttributedString(NSAttributedString(string: "Resize me", attributes: editor.typingAttributes))
+            editor.didChangeText()
+
+            session.textFontSize = 48
+            RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.01))
+
+            let liveFont = try require(
+                editor.attributedString().attribute(.font, at: 0, effectiveRange: nil) as? NSFont,
+                "resized text has no live font"
+            )
+            let imageRect = CaptureGeometry.aspectFit(imageSize: session.imageSize, in: canvas.bounds, padding: 30)
+            let expectedLiveSize = session.textFontSize * (imageRect.width / session.imageSize.width)
+            var problems: [String] = []
+            if abs(liveFont.pointSize - expectedLiveSize) >= 0.25 {
+                problems.append("changing text size leaves the live draft at its old size")
+            }
+
+            _ = canvas.textView(editor, doCommandBy: #selector(NSResponder.insertNewline(_:)))
+            if case let .text(_, _, _, fontSize) = session.annotations.last {
+                if abs(fontSize - session.textFontSize) >= 0.01 {
+                    problems.append("committing after a size change saves the old text size")
+                }
+            } else {
+                throw SelfTestFailure(description: "Return did not create the resized text annotation")
+            }
+            try expect(problems.isEmpty, problems.joined(separator: "; "))
         }
 
         runCase("local history retention", passed: &passed, failed: &failed) {

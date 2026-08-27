@@ -13,7 +13,9 @@ final class EditorSession: ObservableObject {
     @Published var selectedTool: EditorTool = .arrow
     @Published var selectedColor: RGBAColor = .coral
     @Published var lineWidth: CGFloat = 6
+    @Published var textFontSize: CGFloat = TextAnnotationStyle.defaultFontSize
     @Published var statusMessage: String?
+    let textEntryFocusRequests = PassthroughSubject<Void, Never>()
 
     private var undoStack: [EditorSnapshot] = []
     private var redoStack: [EditorSnapshot] = []
@@ -41,13 +43,22 @@ final class EditorSession: ObservableObject {
             value,
             at: origin,
             color: selectedColor,
-            fontSize: TextAnnotationStyle.fontSize(for: lineWidth)
+            fontSize: textFontSize
         )
     }
 
     func addText(_ value: String, at origin: CGPoint, color: RGBAColor, fontSize: CGFloat) {
         guard value.rangeOfCharacter(from: .whitespacesAndNewlines.inverted) != nil else { return }
-        add(.text(origin: origin, value: value, color: color, fontSize: fontSize))
+        add(.text(
+            origin: origin,
+            value: value,
+            color: color,
+            fontSize: TextAnnotationStyle.clampedFontSize(fontSize)
+        ))
+    }
+
+    func requestTextEntryFocus() {
+        textEntryFocusRequests.send()
     }
 
     func crop(to rect: CGRect) {

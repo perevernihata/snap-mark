@@ -72,7 +72,7 @@ A 3, 5, or 10 second delay is available from the home screen. Capture preparatio
 | `H` | Highlight | Add a wide translucent stroke. |
 | `A` | Arrow | Drag toward the point of interest. |
 | `R` | Rectangle | Draw an outlined box. |
-| `T` | Text | Click and type. Drag while typing to move it, then press Return. |
+| `T` | Text | Click and type. Set 12–72 pt size or color while typing, drag to move, then press Return. |
 | `B` | Pixelate | Visually obscure an area. Do not use it to redact secrets. |
 | `X` | Blackout | Replace selected pixels with solid black in exported output. |
 | `C` | Crop | Drag the area to keep. The crop applies on release. |
@@ -111,7 +111,7 @@ make package
 make verify-package
 ```
 
-`make test` treats warnings as errors and runs 32 deterministic tests. `make package` builds a universal arm64 and Intel app with an explicit ad-hoc signature and hardened runtime. Maintainers with the stable local signing files use `make app` instead.
+`make test` treats warnings as errors and runs 33 deterministic tests. `make package` builds a universal arm64 and Intel app with an explicit ad-hoc signature and hardened runtime. Maintainers with the stable local signing files use `make app` instead.
 
 The application is a Swift Package with a SwiftUI shell and AppKit capture overlays and editor canvas. It has no third-party runtime dependencies. See [Architecture](docs/ARCHITECTURE.md) for the component boundaries and [Testing](docs/TESTING.md) for the current regression coverage.
 
