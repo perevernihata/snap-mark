@@ -4,6 +4,12 @@ This file records user-visible SnapMark changes. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [1.0.22] - 2026-08-27
+
+### Fixed
+
+- Checkout-free release publication now addresses the repository explicitly, so GitHub CLI never tries to discover local Git metadata in the write-token job.
+
 ## [1.0.21] - 2026-08-27
 
 ### Added
@@ -48,6 +54,7 @@ This is the first public source release.
 - Inline text is transparent, content-sized, movable while typing, and visually consistent after commit.
 - Changing the palette recolors an active text draft and preserves that color after pressing Return.
 
-[Unreleased]: https://github.com/perevernihata/snap-mark/compare/v1.0.21...HEAD
+[Unreleased]: https://github.com/perevernihata/snap-mark/compare/v1.0.22...HEAD
+[1.0.22]: https://github.com/perevernihata/snap-mark/compare/v1.0.21...v1.0.22
 [1.0.21]: https://github.com/perevernihata/snap-mark/compare/v1.0.20...v1.0.21
 [1.0.20]: https://github.com/perevernihata/snap-mark/releases/tag/v1.0.20

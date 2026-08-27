@@ -74,4 +74,10 @@ if [[ -n "$PERSISTED_CREDENTIALS" ]]; then
     exit 1
 fi
 
+if /usr/bin/grep -q 'gh release create' .github/workflows/release.yml &&
+   ! /usr/bin/grep -q -- '--repo "${GITHUB_REPOSITORY}"' .github/workflows/release.yml; then
+    print -u2 "The checkout-free release publisher must pass an explicit repository to gh."
+    exit 1
+fi
+
 print "Repository checks passed."

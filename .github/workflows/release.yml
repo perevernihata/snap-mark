@@ -120,6 +120,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             dist/SnapMark.zip \
             dist/SnapMark.zip.sha256 \
+            --repo "${GITHUB_REPOSITORY}" \
             --verify-tag \
             --latest \
             --generate-notes \
