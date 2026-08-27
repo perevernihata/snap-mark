@@ -280,8 +280,8 @@ Every non-local reference should end in exactly 40 hexadecimal characters before
 After the next release, consumers can verify both kinds of provenance:
 
 ```sh
-gh release verify v1.0.21 -R perevernihata/snap-mark
-gh release verify-asset v1.0.21 SnapMark.zip -R perevernihata/snap-mark
+gh release verify v1.0.22 -R perevernihata/snap-mark
+gh release verify-asset v1.0.22 SnapMark.zip -R perevernihata/snap-mark
 gh attestation verify SnapMark.zip -R perevernihata/snap-mark \
   --signer-workflow perevernihata/snap-mark/.github/workflows/release.yml
 ```
